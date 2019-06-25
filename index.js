@@ -1,98 +1,64 @@
-const Discord = require('discord.js');
-const bot = new Discord.Client();
-var PREFIX = "!"
-const memeURL = 'https://api.imgflip.com/get_memes';
-var users = {};
+const Util = require('./util/Util');
 
-const ytdl = require('ytdl-core');
-const streamOptions = {seek: 0, volume: 1};
+module.exports = {
+  // "Root" classes (starting points)
+  Client: require('./client/Client'),
+  Shard: require('./sharding/Shard'),
+  ShardClientUtil: require('./sharding/ShardClientUtil'),
+  ShardingManager: require('./sharding/ShardingManager'),
+  WebhookClient: require('./client/WebhookClient'),
 
-bot.on('ready', () => {
-    console.log(`Logged in as ${bot.user.tag}!`);
-  });  
+  // Utilities
+  Collection: require('./util/Collection'),
+  Constants: require('./util/Constants'),
+  DiscordAPIError: require('./client/rest/DiscordAPIError'),
+  EvaluatedPermissions: require('./util/Permissions'),
+  Permissions: require('./util/Permissions'),
+  Snowflake: require('./util/Snowflake'),
+  SnowflakeUtil: require('./util/Snowflake'),
+  Util: Util,
+  util: Util,
+  version: require('../package').version,
 
-bot.on('message', async msg => {
-    if (msg.author.bot) return;
+  // Shortcuts to Util methods
+  escapeMarkdown: Util.escapeMarkdown,
+  fetchRecommendedShards: Util.fetchRecommendedShards,
+  splitMessage: Util.splitMessage,
 
-    var name = msg.author.username;
-    if(!users.hasOwnProperty(name)) {
-        users[name] = 0;
-    }
-    users[name]++;
-    if (users[name] % 10 === 0) {
-        msg.reply("" + name + "is now level " + users[name]/10 + "");
-    }
-
-    if(!msg.content.startsWith(PREFIX)) return;
-
-    var args = msg.content.toLowerCase().substring(PREFIX.length).split(" ");
-
-    switch (args[0]) {
-        case "odds":
-            odds(msg, args);
-            break;
-
-        case "play":
-            playMusic(msg, args);
-            break;
-        
-        case "prefix":
-            changePrefix(msg, args);
-            break;
-
-        case "meme":
-            sendMeme(msg,args);
-            break;
-
-        default:
-            msg.reply("Invalid Command");
-    }
-});
-
-function odds(message, args) {
-
-    if (args.length != 3 || isNaN(args[1]) || isNaN(args[2])) {
-        message.reply("Use only 2 numbers!");
-        return;
-    }
-    if (args[1] > args[2]) {
-        message.reply("Invalid numbers. You can't guess " + args[1] + " out of " + args[2] + " numbers.");
-        return;
-    }
-    var guess = Math.floor(Math.random() * args[2]) + 1;
-    message.reply("You guessed " + args[1] + ". The number was " + guess + ".");
-    if (guess == args[1]) {
-        message.reply("Congrats! You guessed the right number in 1 out of " + args[2] + " chances.");
-    } else {
-        message.reply("You guessed the wrong number. Unlucky");
-    }  
+  // Structures
+  Attachment: require('./structures/Attachment'),
+  CategoryChannel: require('./structures/CategoryChannel'),
+  Channel: require('./structures/Channel'),
+  ClientUser: require('./structures/ClientUser'),
+  ClientUserSettings: require('./structures/ClientUserSettings'),
+  Collector: require('./structures/interfaces/Collector'),
+  DMChannel: require('./structures/DMChannel'),
+  Emoji: require('./structures/Emoji'),
+  Game: require('./structures/Presence').Game,
+  GroupDMChannel: require('./structures/GroupDMChannel'),
+  Guild: require('./structures/Guild'),
+  GuildAuditLogs: require('./structures/GuildAuditLogs'),
+  GuildChannel: require('./structures/GuildChannel'),
+  GuildMember: require('./structures/GuildMember'),
+  Invite: require('./structures/Invite'),
+  Message: require('./structures/Message'),
+  MessageAttachment: require('./structures/MessageAttachment'),
+  MessageCollector: require('./structures/MessageCollector'),
+  MessageEmbed: require('./structures/MessageEmbed'),
+  MessageMentions: require('./structures/MessageMentions'),
+  MessageReaction: require('./structures/MessageReaction'),
+  OAuth2Application: require('./structures/OAuth2Application'),
+  ClientOAuth2Application: require('./structures/OAuth2Application'),
+  PartialGuild: require('./structures/PartialGuild'),
+  PartialGuildChannel: require('./structures/PartialGuildChannel'),
+  PermissionOverwrites: require('./structures/PermissionOverwrites'),
+  Presence: require('./structures/Presence').Presence,
+  ReactionEmoji: require('./structures/ReactionEmoji'),
+  ReactionCollector: require('./structures/ReactionCollector'),
+  RichEmbed: require('./structures/RichEmbed'),
+  Role: require('./structures/Role'),
+  TextChannel: require('./structures/TextChannel'),
+  User: require('./structures/User'),
+  VoiceChannel: require('./structures/VoiceChannel'),
+  Webhook: require('./structures/Webhook'),
 };
-
-function changePrefix(message, args) {
-    PREFIX = args[1];
-    message.channel.sendMessage("Command Prefix has been set to " + PREFIX);
-};
-
-function playMusic(message, args) {
-    let VoiceChannel = message.guild.channels.find(channel => channel.id === '516228667685470218');
-    if (VoiceChanel != null) {
-        VoiceChannel.join()
-        .then(connection => {
-            const stream = ytdl(arg[1], {filter: 'audioonly'});
-            const dispatcher = connection.playStream(stream, streamOptions);
-        })
-        .catch();
-    }
-}
-
-function sendMeme(message, args) {
-    fetch(memeURL)
-    .then(function(response) {
-        message.channel.send("Here is your meme!", {files: response})
-    })
-    .catch(function() {
-        message.reply("Cannot get the image :(")
-    });
-}
-
-bot.login('NDcyNTA5NDE5MTc2MDY3MDk0.Dj0rAA.ipf2D4AiwuIUwakLzcZHqQXj188');
